@@ -46,16 +46,16 @@ PER_L12_64eles_veraRF_recon_deps\
     └── getparam.m                              探头参数 getparam('L12-3v')
 ```
 
-| 文件 | 原路径（相对 `K:\scui code copy ver-20250602\fieldii\pulse-echo impulse response\`） |
+| 文件 | 组件来源 |
 |---|---|
-| 01_main_pipeline\*.m | `custom10M\`（weighted_L1、TWIST_vera 为本流程修改版） |
-| 02_optimization\TwIST.m | `TwIST_v2\TwIST_v2\`（自包含） |
-| 02_optimization\soft2.m | `custom10M\` |
-| 02_optimization\weighted_L1.m | `.\`（`MPI\` 下有一份旧版，Nmpz=325、返回 y1，与本流程 Nmpz=285 不符，勿混用） |
-| 03_output_io\tifwrite.m | `.\`（根目录 `K:\scui code copy ver-20250602\` 下另有支持 4D 的版本，写 3D 数据两者等效） |
-| 03_output_io\Fast_Tiff_Write.m | `.\`（各处副本内容相同） |
-| 04_Field_II\* | `Field_II_windows\`（完整 Field II 库仍在原处） |
-| 05_MUST\getparam.m | `MUST\` |
+| 01_main_pipeline\*.m | 项目专用重建流程 |
+| 02_optimization\TwIST.m | 自包含 TwIST v2 求解器 |
+| 02_optimization\soft2.m | 项目专用临近算子 |
+| 02_optimization\weighted_L1.m | 与 Nmpz=285 兼容的项目正则项 |
+| 03_output_io\tifwrite.m | 3D TIFF 写入封装 |
+| 03_output_io\Fast_Tiff_Write.m | TIFF 写入实现 |
+| 04_Field_II\* | 所需的 Field II 接口子集 |
+| 05_MUST\getparam.m | 所需的 MUST 探头参数函数 |
 
 ---
 
@@ -246,11 +246,13 @@ $$\tau_{\text{eff}} = 0.02\times\max\big|R'Y\big|$$
 
 ## 9. 使用方法
 
-把本文件夹（含全部子文件夹）加入 MATLAB path，并保证数据文件路径可解析：
+把本文件夹（含全部子文件夹）加入 MATLAB path。私有数据应放在仓库外，并通过环境变量配置位置：
 
 ```matlab
-addpath(genpath('...\PER_L12_64eles_veraRF_recon_deps'));            % genpath 自动包含 5 个子文件夹
-addpath(genpath('K:\scui code copy ver-20250602\fieldii\pulse-echo impulse response\MPI'));  % tv.mat / TW_L12_067DC_2cycles.mat
+addpath(genpath('<PROJECT_ROOT>'));
+setenv('VRUSI_DATA_ROOT','<DATA_ROOT>');
+setenv('VRUSI_ASSETS_ROOT','<ASSETS_ROOT>');
+setenv('VRUSI_SIMULATION_ROOT','<SIMULATION_ROOT>');
 run PER_L12_64eles_veraRF_recon.m
 ```
 
@@ -258,9 +260,9 @@ run PER_L12_64eles_veraRF_recon.m
 
 | 数据 | 用途 | 位置 |
 |---|---|---|
-| `tv.mat` | 实测 impulse response（continue1） | `..\L12hydrophone\`、`..\MPI\`（靠 MATLAB path 解析） |
-| `TW_L12_067DC_2cycles.mat` | 实测发射波形（continue1） | `..\MPI\` |
-| Verasonics RF 数据集 | 观测数据（continue2） | `O:\OPTI\...`、`I:\OPTI\...`（绝对路径） |
-| 仿真脉冲响应矩阵 | 系统矩阵（continue3） | `I:\OPTI\Normc_normalized_...`（绝对路径） |
+| `tv.mat` | 实测 impulse response（continue1） | `VRUSI_ASSETS_ROOT` |
+| `TW_L12_067DC_2cycles.mat` | 实测发射波形（continue1） | `VRUSI_ASSETS_ROOT` |
+| Verasonics RF 数据集 | 观测数据（continue2） | `VRUSI_DATA_ROOT` |
+| 仿真脉冲响应矩阵 | 系统矩阵（continue3） | `VRUSI_SIMULATION_ROOT` |
 
 MATLAB 内置/工具箱函数（`rescale`、`downsample` 等）无需复制。

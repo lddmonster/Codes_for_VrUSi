@@ -42,16 +42,16 @@ PER_L12_64eles_veraRF_recon_deps\
     └── getparam.m                              Probe parameters, getparam('L12-3v')
 ```
 
-| File | Original path (relative to `K:\scui code copy ver-20250602\fieldii\pulse-echo impulse response\`) |
+| File | Component source |
 |---|---|
-| 01_main_pipeline\*.m | `custom10M\` (weighted_L1 and TWIST_vera are the versions modified for this pipeline) |
-| 02_optimization\TwIST.m | `TwIST_v2\TwIST_v2\` (self-contained) |
-| 02_optimization\soft2.m | `custom10M\` |
-| 02_optimization\weighted_L1.m | `.\` (an older version exists in `MPI\` with Nmpz=325 and returning y1 — incompatible with this pipeline's Nmpz=285; do not mix them up) |
-| 03_output_io\tifwrite.m | `.\` (a 4D-capable variant exists at `K:\scui code copy ver-20250602\`; both are equivalent for 3D data) |
-| 03_output_io\Fast_Tiff_Write.m | `.\` (all copies identical) |
-| 04_Field_II\* | `Field_II_windows\` (the complete Field II library remains there) |
-| 05_MUST\getparam.m | `MUST\` |
+| 01_main_pipeline\*.m | Project-specific reconstruction pipeline |
+| 02_optimization\TwIST.m | Self-contained TwIST v2 solver |
+| 02_optimization\soft2.m | Project-specific proximal operator |
+| 02_optimization\weighted_L1.m | Nmpz=285-compatible project regularizer |
+| 03_output_io\tifwrite.m | 3D TIFF writer wrapper |
+| 03_output_io\Fast_Tiff_Write.m | TIFF writer implementation |
+| 04_Field_II\* | Required Field II interface subset |
+| 05_MUST\getparam.m | Required MUST probe-parameter helper |
 
 ---
 
@@ -242,11 +242,13 @@ each outer iteration:
 
 ## 9. Usage
 
-Add this folder (including all subfolders) to the MATLAB path and make sure the data files resolve:
+Add this folder (including all subfolders) to the MATLAB path. Keep private data outside the repository and configure its location with environment variables:
 
 ```matlab
-addpath(genpath('...\PER_L12_64eles_veraRF_recon_deps'));            % genpath includes all 5 subfolders automatically
-addpath(genpath('K:\scui code copy ver-20250602\fieldii\pulse-echo impulse response\MPI'));  % tv.mat / TW_L12_067DC_2cycles.mat
+addpath(genpath('<PROJECT_ROOT>'));
+setenv('VRUSI_DATA_ROOT','<DATA_ROOT>');
+setenv('VRUSI_ASSETS_ROOT','<ASSETS_ROOT>');
+setenv('VRUSI_SIMULATION_ROOT','<SIMULATION_ROOT>');
 run PER_L12_64eles_veraRF_recon.m
 ```
 
@@ -254,10 +256,10 @@ External data required at runtime (not functions; not distributed with this fold
 
 | Data | Purpose | Location |
 |---|---|---|
-| `tv.mat` | Measured impulse response (continue1) | `..\L12hydrophone\`, `..\MPI\` (resolved via the MATLAB path) |
-| `TW_L12_067DC_2cycles.mat` | Measured transmit waveform (continue1) | `..\MPI\` |
-| Verasonics RF dataset | Observation data (continue2) | `O:\OPTI\...`, `I:\OPTI\...` (absolute paths) |
-| Simulated impulse-response matrices | System matrix (continue3) | `I:\OPTI\Normc_normalized_...` (absolute path) |
+| `tv.mat` | Measured impulse response (continue1) | `VRUSI_ASSETS_ROOT` |
+| `TW_L12_067DC_2cycles.mat` | Measured transmit waveform (continue1) | `VRUSI_ASSETS_ROOT` |
+| Verasonics RF dataset | Observation data (continue2) | `VRUSI_DATA_ROOT` |
+| Simulated impulse-response matrices | System matrix (continue3) | `VRUSI_SIMULATION_ROOT` |
 
 MATLAB built-in / toolbox functions (`rescale`, `downsample`, etc.) need no copying.
 

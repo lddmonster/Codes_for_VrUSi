@@ -16,9 +16,13 @@ N_sub_y = 10;               % Element subdivision in y-direction
 apodTx = 0;                 % Transmit apodization. 0:boxcar, 1:Hanning, 2:Cosine-tapered 0.3
 apodRx = 1;                 % Receive apodization. 0:boxcar, 1:Hanning, 2:Cosine-tapered 0.3
 dynamic_receive_focus = 0;  % Enable dynamic receive focusing.
-simType = 'txrx';  
-addpath(genpath('K:\scui code copy ver-20250602\fieldii\pulse-echo impulse response\Plane_Wave_Ultrasound_Stolt_F-K_Migration'));
-addpath(genpath('K:\scui code copy ver-20250602\fieldii\pulse-echo impulse response\MUST'));
+simType = 'txrx';
+% Optional measured-waveform assets and external dependencies can be kept
+% outside the repository. Point VRUSI_ASSETS_ROOT to that local directory.
+assets_root = getenv('VRUSI_ASSETS_ROOT');
+if ~isempty(assets_root)
+    addpath(genpath(assets_root));
+end
 
 param = getparam('L12-3v');
 param.fc = f0;

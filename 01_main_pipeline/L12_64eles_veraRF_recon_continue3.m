@@ -6,9 +6,12 @@ for trans_num_now  =  3:3
 
 simdata_one_angle = [];
 for re_ele = 1:N_elements
-%     temp_path2 = 'I:\OPTI\Local_normalized_time_domain_PER_L12_64elements_c1540_hydrophone_impulse_response_067dc_2cycles_exciation_5angles_in_+-pi12_Nmpx2_285_pdataregion_verasonicsRecon\';
-    temp_path2 = 'I:\OPTI\Normc_normalized_double_time_domain_PER_L12_64elements_c1540_hydrophone_impulse_response_067dc_2cycles_exciation_5angles_in_+-pi12_Nmpx2_285_pdataregion_verasonicsRecon_convImpulseResponse_Trans\';
-    simdata_name = [temp_path2,num2str(trans_num_now,'%02d'),'angle_',num2str(re_ele,'%03d'),'elements.mat'];
+    temp_path2 = getenv('VRUSI_SIMULATION_ROOT');
+    if isempty(temp_path2)
+        error('Set the VRUSI_SIMULATION_ROOT environment variable before running.');
+    end
+    simdata_name = fullfile(temp_path2,[num2str(trans_num_now,'%02d'), ...
+        'angle_',num2str(re_ele,'%03d'),'elements.mat']);
     simData2 = load(simdata_name);simData2 = simData2.temp_angle_temp_ele_pulseecho_allregion;
     %% fft p-e r
     simData2_com = zeros(nfft,size(simData2,2));
