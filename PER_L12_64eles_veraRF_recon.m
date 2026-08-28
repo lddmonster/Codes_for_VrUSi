@@ -36,7 +36,7 @@ frames_num = 1000; %500 frames
 
 for num_rcv = 5:5
 rf_all = [];rf_batch1=[];rf_batch2=[];rf_batch3=[];rf_batch4=[];
-Rf_name = [pathdata{temp_datap},rfdatap{temp_datap}];
+Rf_name = fullfile(pathdata{temp_datap},rfdatap{temp_datap});
 L12_64eles_veraRF_recon_continue2; %rf fft
 L12_64eles_veraRF_recon_continue3; %simdata updata
 
@@ -53,7 +53,9 @@ title('Optimization image')
 xlabel('[mm]'), ylabel('[mm]')
 shading interp, axis equal ij tight
 
-mkdir([pathdata{temp_datap},'optirecon\opti tau0.02 c1540 pdataregion Ir2wyConv CUSI_Regulations_OnlyL1_1angles_tau0_02']);
+output_dir = fullfile(pathdata{temp_datap},'optirecon', ...
+    'opti tau0.02 c1540 pdataregion Ir2wyConv CUSI_Regulations_OnlyL1_1angles_tau0_02');
+mkdir(output_dir);
 temp_bm_kk = zeros(Nmpz,Nmpx,frames_num);
 temp_bm_kk_complex = zeros(Nmpz,Nmpx,frames_num);
 for frame_temp = 1:frames_num
@@ -63,12 +65,13 @@ for frame_temp = 1:frames_num
     temp_bm_kk(:,:,frame_temp)=bm_kk;
     temp_bm_kk_complex(:,:,frame_temp) = reshape(x_twist(:,frame_temp),Nmpz,Nmpx);
 end
-outpic=[pathdata{temp_datap},'optirecon\opti tau0.02 c1540 pdataregion Ir2wyConv CUSI_Regulations_OnlyL1_1angles_tau0_02\','img_',sprintf('%04d',num_rcv),'.tif'] ;
+outpic = fullfile(output_dir,['img_',sprintf('%04d',num_rcv),'.tif']);
 tifwrite(single(temp_bm_kk),outpic) ;  
-outpic2=[pathdata{temp_datap},'optirecon\opti tau0.02 c1540 pdataregion Ir2wyConv CUSI_Regulations_OnlyL1_1angles_tau0_02\','x_twist_',sprintf('%04d',num_rcv),'.mat'] ;
+outpic2 = fullfile(output_dir,['x_twist_',sprintf('%04d',num_rcv),'.mat']);
 save(outpic2,"x_twist");
 end
 end
+
 
 
 
