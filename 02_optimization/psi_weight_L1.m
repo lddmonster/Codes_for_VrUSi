@@ -1,34 +1,9 @@
 function [X, info] = psi_weight_L1(V, gamma, options)
 %PSI_WEIGHT_L1 Proximal operator matched to weighted_L1.m.
-%
 % [X,info] = psi_weight_L1(V,gamma,options) approximately minimizes
 %   0.5*norm(X-V,'fro')^2 + gamma*Phi(X), where
 %   S = std(reshape(X,Nz,Nx,[]),0,3);
 %   Phi(X) = norm(S,1) + sum(abs(X(:)))/size(X,2).
-%
-% IMPORTANT: norm(S,1) is the MATRIX 1-norm (maximum column sum),
-% not the sum over every pixel. Defaults Nz=285, Nx=128 match the
-% weighted_L1.m exactly. X and V are [Nz*Nx, frames].
-%
-% Algorithm: dual block coordinate minimization / proximal Dykstra.
-% Uses only MATLAB built-ins, supports complex data, outputs double.
-% No RF matrix, no Optimization Toolbox, no warm-start hidden state.
-%
-% TwIST integration (keep your original Phi):
-%   Psi = @(v,t) psi_weight_L1(v,t,proxOptions);
-% t already equals tau/max_svd in TwIST. Do NOT multiply
-% by tau a second time inside this function.
-%
-% Defaults:
-%   Nz=285, Nx=128, MaxIter=1000, CheckEvery=5,
-%   RelGapTol=1e-8, AbsGapTol=1e-12,
-%   ProjectionRelTol=1e-13, ProjectionMaxIter=100,
-%   ChunkPixels=1024, FailOnNonconvergence=true, Verbose=false.
-%
-% Stop when primal-dual gap <= AbsGapTol + RelGapTol*primalObjective.
-% This is a numerical approximation, not an exact finite-step formula.
-% Default failure is an error so TwIST cannot silently accept an
-% uncertified inner solution. Check info.converged in direct calls.
 
 if nargin < 3 || isempty(options), options = struct(); end
 opt = parse_options(options);
