@@ -26,6 +26,22 @@ initarray = zeros(285*128,frames_num);
 tolA = 1e-2;
 Phi = @(x) weighted_L1(x);
 % Psi = @(x,tau) soft(x,tau);
+%
+% Optional proximal operator matched to the complete weighted_L1 regularizer.
+% This block is intentionally disabled until the revised solver has been
+% validated and the reported analyses have been rerun with it.
+% proxOptions = struct;
+% proxOptions.Nz = 285;
+% proxOptions.Nx = 128;
+% proxOptions.RelGapTol = 1e-8;
+% proxOptions.AbsGapTol = 1e-12;
+% proxOptions.MaxIter = 1000;
+% proxOptions.CheckEvery = 5;
+% proxOptions.ChunkPixels = 1024;
+% proxOptions.FailOnNonconvergence = true;
+% Psi = @(v,gamma) psi_weight_L1(v,gamma,proxOptions);
+%
+% Current active implementation: elementwise complex soft thresholding.
 Psi = @(x,tau)soft2(x,tau);
 % stop criterium:  the relative change in the objective function 
 % falls below 'ToleranceA'
