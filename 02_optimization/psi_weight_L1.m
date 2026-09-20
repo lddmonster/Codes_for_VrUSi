@@ -1,9 +1,4 @@
 function [X, info] = psi_weight_L1(V, gamma, options)
-%PSI_WEIGHT_L1 Proximal operator matched to weighted_L1.m.
-% [X,info] = psi_weight_L1(V,gamma,options) approximately minimizes
-%   0.5*norm(X-V,'fro')^2 + gamma*Phi(X), where
-%   S = std(reshape(X,Nz,Nx,[]),0,3);
-%   Phi(X) = sum(abs(S(:))) + sum(abs(X(:)))/size(X,2).
 
 if nargin < 3 || isempty(options), options = struct(); end
 opt = parse_options(options);
