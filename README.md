@@ -23,14 +23,3 @@ Codes_for_VrUSi/
 ├── 04_Field_II/                            # Field II related utilities
 └── 05_MUST/                                # MUST related utilities
 ```
-
-## Example use
-
-Add the repository and the required external toolboxes to the MATLAB path, adjust the example settings for the local environment, and run:
-
-```matlab
-addpath(genpath('path/to/Codes_for_VrUSi'));
-run('PER_L12_64eles_veraRF_recon.m');
-```
-
-Users should adapt and validate the example code for their own data and research settings.
