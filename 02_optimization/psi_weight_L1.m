@@ -3,7 +3,7 @@ function [X, info] = psi_weight_L1(V, gamma, options)
 % [X,info] = psi_weight_L1(V,gamma,options) approximately minimizes
 %   0.5*norm(X-V,'fro')^2 + gamma*Phi(X), where
 %   S = std(reshape(X,Nz,Nx,[]),0,3);
-%   Phi(X) = norm(S,1) + sum(abs(X(:)))/size(X,2).
+%   Phi(X) = sum(abs(S(:))) + sum(abs(X(:)))/size(X,2).
 
 if nargin < 3 || isempty(options), options = struct(); end
 opt = parse_options(options);
@@ -23,7 +23,7 @@ info = struct('converged',false,'iterations',0,'gamma',gamma, ...
     'primalObjective',NaN,'dualObjective',NaN,'gap',NaN, ...
     'relativeGap',NaN,'solutionErrorBound',NaN, ...
     'elapsedSeconds',NaN,'status','not_started', ...
-    'method','dual coordinate minimization for the unchanged weighted_L1');
+    'method','dual coordinate minimization for entrywise temporal-std L1');
 
 if gamma == 0 || scale == 0
     X = V;
@@ -55,7 +55,7 @@ last = struct();
 for iteration = 1:opt.MaxIter
     % Dual feasible sets:
     %   |P_pt| <= alpha;
-    %   mean(Q,2)=0, sum_l max_z norm(Q_zl,:,2) <= beta.
+    %   mean(Q,2)=0 and norm(Q_p,:,2) <= beta for every spatial pixel p.
     % Coordinate projections minimize 0.5*norm(V-P-Q,'fro')^2.
     P = project_entry_disks(V-Q,alpha,opt.ChunkPixels);
     Q = project_temporal_dual(V-P,beta,opt);
@@ -135,61 +135,18 @@ for first=1:blockSize:size(P,1)
 end
 end
 
-function Q = project_temporal_dual(B,budget,opt)
-% Projection onto mean-zero rows with sum_l max_z row_norm(Q_zl) <= budget.
+function Q = project_temporal_dual(B,radius,opt)
+% Projection onto independent mean-zero temporal L2 balls for all pixels.
 Q=zeros(size(B),'like',B);
-if budget == 0, return; end
-rows=size(B,1);
-r=zeros(rows,1);
-for first=1:opt.ChunkPixels:rows
-    ids=first:min(first+opt.ChunkPixels-1,rows);
+if radius == 0, return; end
+for first=1:opt.ChunkPixels:size(B,1)
+    ids=first:min(first+opt.ChunkPixels-1,size(B,1));
     C=B(ids,:)-mean(B(ids,:),2);
-    r(ids)=sqrt(sum(abs(C).^2,2));
-end
-R=reshape(r,opt.Nz,opt.Nx);
-if sum(max(R,[],1)) <= budget
-    caps=max(R,[],1);
-else
-    % For a common multiplier nu, the optimal cap in column l is
-    % theta_l=max(0,max_k((sum_{i<=k} sorted_r_il - nu)/k)).
-    % Find nu so sum(theta_l)=budget, retaining the feasible side.
-    cumulative=cumsum(sort(R,1,'descend'),1);
-    counts=(1:opt.Nz)';
-    low=0;
-    high=max(cumulative(end,:));
-    caps=zeros(1,opt.Nx);
-    for k=1:opt.ProjectionMaxIter
-        nu=low+(high-low)/2;
-        candidate=max(0,max((cumulative-nu)./counts,[],1));
-        total=sum(candidate);
-        if total>budget
-            low=nu;
-        else
-            high=nu;
-            caps=candidate;
-            if budget-total <= opt.ProjectionRelTol*budget, break; end
-        end
-    end
-end
-qRadius=zeros(rows,1);
-for first=1:opt.ChunkPixels:rows
-    ids=first:min(first+opt.ChunkPixels-1,rows);
-    C=B(ids,:)-mean(B(ids,:),2);
-    column=floor((ids(:)-1)/opt.Nz)+1;
-    cap=caps(column);
-    cap=cap(:);
+    rowNorm=sqrt(sum(abs(C).^2,2));
     factor=ones(numel(ids),1);
-    active=r(ids)>cap;
-    currentRadius=r(ids);
-    factor(active)=cap(active)./currentRadius(active);
-    block=C.*factor;
-    block=block-mean(block,2); % remove floating-point temporal-mean residue
-    Q(ids,:)=block;
-    qRadius(ids)=sqrt(sum(abs(block).^2,2));
-end
-actual=sum(max(reshape(qRadius,opt.Nz,opt.Nx),[],1));
-if actual>budget
-    Q=Q*((budget/actual)*(1-16*eps));
+    active=rowNorm>radius;
+    factor(active)=radius./rowNorm(active);
+    Q(ids,:)=C.*factor;
 end
 end
 
@@ -210,7 +167,7 @@ for first=1:opt.ChunkPixels:size(X,1)
     fidelity=fidelity+0.5*sum(abs(residual(:)).^2);
 end
 f=alpha*amplitude;
-g=beta*max(sum(reshape(r,opt.Nz,opt.Nx),1));
+g=beta*sum(r);
 rawGap=(f-innerP)+(g-innerQ);
 roundoff=128*eps*max([abs(f),abs(g),abs(innerP),abs(innerQ),realmin])*max(1,log2(numel(X)+1));
 if rawGap < -roundoff
