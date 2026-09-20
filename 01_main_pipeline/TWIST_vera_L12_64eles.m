@@ -25,11 +25,7 @@ initarray = zeros(285*128,frames_num);
 % stopping theshold
 tolA = 1e-2;
 Phi = @(x) weighted_L1(x);
-% Psi = @(x,tau) soft(x,tau);
-%
-% Optional proximal operator matched to the complete weighted_L1 regularizer.
-% This block is intentionally disabled until the revised solver has been
-% validated and the reported analyses have been rerun with it.
+
 % proxOptions = struct;
 % proxOptions.Nz = 285;
 % proxOptions.Nx = 128;
@@ -39,10 +35,12 @@ Phi = @(x) weighted_L1(x);
 % proxOptions.CheckEvery = 5;
 % proxOptions.ChunkPixels = 1024;
 % proxOptions.FailOnNonconvergence = true;
-% Psi = @(v,gamma) psi_weight_L1(v,gamma,proxOptions);
-%
+
 % Current active implementation: elementwise complex soft thresholding.
 Psi = @(x,tau)soft2(x,tau);
+% Psi = @(v,gamma) psi_weight_L1(v,gamma,proxOptions);
+
+
 % stop criterium:  the relative change in the objective function 
 % falls below 'ToleranceA'
 tic();
